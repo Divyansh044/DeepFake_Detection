@@ -3,8 +3,8 @@ import shutil
 import json
 
 # Define paths
-metadata_path=r'C:\Users\Lenovo\Downloads\dfdc_train_part_00\dfdc_train_part_0\metadata.json'
-video_dir=r'C:\Users\Lenovo\Downloads\dfdc_train_part_00\dfdc_train_part_0'
+metadata_path=r'Path to metadata file'
+video_dir='Path to downloaded videos'
 dataset_dir='dataset'
 real_dir=os.path.join(dataset_dir,'real')
 fake_dir=os.path.join(dataset_dir,'fake')
