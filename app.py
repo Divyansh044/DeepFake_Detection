@@ -4,13 +4,22 @@ import shutil
 import logging
 import uuid
 import tempfile
-import cv2
 from PIL import Image
 from flask import Flask, request, render_template, redirect, url_for, flash, session
 from flask_cors import CORS
 from torchvision import transforms
 from torchvision.models import efficientnet_b0
 from werkzeug.utils import secure_filename
+
+# Change OpenCV import to use headless version
+try:
+    import cv2
+except ImportError:
+    # If standard cv2 fails, try installing headless version
+    import subprocess
+    import sys
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "opencv-python-headless"])
+    import cv2
 
 # ========== CONFIG ==========
 app = Flask(__name__)
@@ -23,6 +32,11 @@ CORS(app)
 # ========== LOGGING ==========
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# ========== FACE DETECTION ==========
+# Add the missing face_cascade definition
+face_cascade_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
+face_cascade = cv2.CascadeClassifier(face_cascade_path)
 
 # ========== MODEL LOAD ==========
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
