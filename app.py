@@ -10,7 +10,7 @@ from flask_cors import CORS
 from torchvision import transforms
 from torchvision.models import efficientnet_b0
 from werkzeug.utils import secure_filename
-
+from dotenv import load_dotenv
 # Change OpenCV import to use headless version
 try:
     import cv2
@@ -20,6 +20,7 @@ except ImportError:
     import sys
     subprocess.check_call([sys.executable, "-m", "pip", "install", "opencv-python-headless"])
     import cv2
+load_dotenv()
 
 # ========== CONFIG ==========
 app = Flask(__name__)
@@ -27,7 +28,9 @@ app.secret_key = os.environ.get("SESSION_SECRET", "deepfake_detection_secret")
 UPLOAD_FOLDER = tempfile.mkdtemp()
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB limit
-CORS(app)
+
+origins = os.getenv("ALLOWED_ORIGINS", "").split(",")
+CORS(app, resources={r"/*": {"origins": origins}})
 
 # ========== LOGGING ==========
 logging.basicConfig(level=logging.INFO)
@@ -183,4 +186,5 @@ def cleanup():
     shutil.rmtree(UPLOAD_FOLDER, ignore_errors=True)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+   port = int(os.environ.get('PORT', 5000))
+   app.run(host='0.0.0.0', port=port)
