@@ -5,7 +5,6 @@ import logging
 import uuid
 import tempfile
 import cv2
-import dlib
 from PIL import Image
 from flask import Flask, request, render_template, redirect, url_for, flash, session
 from flask_cors import CORS
@@ -55,7 +54,6 @@ transform = transforms.Compose([
                          std=[0.229, 0.224, 0.225])
 ])
 
-face_detector = dlib.get_frontal_face_detector()
 
 # ========== HELPERS ==========
 def allowed_file(filename):
@@ -74,11 +72,10 @@ def extract_faces_from_video(video_path, max_frames=10):
             break
         if frame_id % interval == 0:
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            detected = face_detector(gray)
-            if detected:
-                d = detected[0]
-                x1, y1, x2, y2 = max(0, d.left()), max(0, d.top()), d.right(), d.bottom()
-                face_crop = frame[y1:y2, x1:x2]
+            detected = face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5)
+            if len(detected) > 0:
+                x, y, w, h = detected[0]
+                face_crop = frame[y:y+h, x:x+w]
                 if face_crop.size == 0:
                     continue
                 image = Image.fromarray(cv2.cvtColor(face_crop, cv2.COLOR_BGR2RGB))
@@ -87,6 +84,7 @@ def extract_faces_from_video(video_path, max_frames=10):
         frame_id += 1
     cap.release()
     return faces
+
 
 def predict_deepfake(frames):
     if not frames:
